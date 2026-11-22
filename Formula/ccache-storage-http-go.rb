@@ -5,14 +5,6 @@ class CcacheStorageHttpGo < Formula
   sha256 "e9f78a4df3a56178ab7003a3a82c4e8e982fde3e0b227af44f973f8ca5446741"
   license "MIT"
 
-  revision 1
-
-  bottle do
-    root_url "https://ghcr.io/v2/ccache/tap"
-    sha256 cellar: :any_skip_relocation, arm64_tahoe:  "ce584d8e4168a712f5a9d4132fb37fe3c490fe75d9a8d64793dcfd2ceec393ea"
-    sha256 cellar: :any,                 x86_64_linux: "6f1d756a67a02120b6c25a51424ea3c48b160a6b5065eec5aa13f7d99015baa7"
-  end
-
   depends_on "go" => :build
   depends_on "ccache" => :test
   depends_on "nginx" => :test
