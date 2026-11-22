@@ -5,6 +5,12 @@ class CcacheStorageHttpGo < Formula
   sha256 "e9f78a4df3a56178ab7003a3a82c4e8e982fde3e0b227af44f973f8ca5446741"
   license "MIT"
 
+  bottle do
+    root_url "https://github.com/ccache/homebrew-tap/releases/download/ccache-storage-http-go-0.10.1"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:  "4fec154de2e83d9629bd0679049eb5aef6d12c67325ad2efa38d24824c9ff3c2"
+    sha256 cellar: :any,                 x86_64_linux: "48a62c31c4691be9fe1168e38b2b7e513ee4304e86043385dc5b90a5ec6ee6f3"
+  end
+
   depends_on "go" => :build
   depends_on "ccache" => :test
   depends_on "nginx" => :test
