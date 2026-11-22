@@ -5,7 +5,7 @@ class CcacheStorageRedis < Formula
   sha256 "56cd23972860ba2caa17efffcff31dc9a327cfd717217ab680cac8e94871c006"
   license "MIT"
 
-  revision 1
+  revision 2
 
   bottle do
     root_url "https://ghcr.io/v2/ccache/tap"
@@ -62,6 +62,13 @@ class CcacheStorageRedis < Formula
       assert_equal "PONG", shell_output("#{redis_cli} -s #{redis_socket} ping").strip
 
       with_test_process(bin/"ccache-storage-redis") do
+        50.times do
+          break if crsh_socket.socket?
+
+          sleep 0.1
+        end
+        assert_predicate crsh_socket, :socket?, "Storage helper did not create its IPC socket"
+
         3.times do
           system ccache_bin, "cc", "-c", "test.c"
         end
