@@ -33,9 +33,15 @@ class CcacheStorageOciOs < Formula
     ENV["CRSH_ATTR_VALUE_1"] = "oke_workload_identity"
 
     with_test_process(bin/"ccache-storage-oci-os") do
-      sleep 3
-      assert_match "OCI_RESOURCE_PRINCIPAL_VERSION", crsh_log.read
-      refute_path_exists crsh_socket
+      found = false
+      50.times do
+        found = crsh_log.exist? && crsh_log.read.include?("OCI_RESOURCE_PRINCIPAL_VERSION")
+        break if found
+
+        sleep 0.1
+      end
+      assert found, "Expected OCI_RESOURCE_PRINCIPAL_VERSION error in #{crsh_log}"
+      refute_path_exists crsh_socket, "IPC socket must not exist when OCI authentication fails"
     end
   end
 end

@@ -22,23 +22,21 @@ class CcacheStorageRedis < Formula
   end
 
   test do
-    # We need to launch the storage helper on our own because even with
-    # XDG_RUNTIME_DIR set to testpath the Unix domain socket path generated
-    # by ccache for the helper is too long (131 >= 104), e.g.:
-    #   /private/tmp/ccache-storage-redis-test-20261121-32771-4xpbql/
-    #   ccache-tmp/storage-redis+unix-4f7a92adc62d75f37ca95ea6a17623f4d1647683
-
+    # Launch the storage helper ourselves instead of letting ccache spawn it:
+    # the test sandbox only allows Unix socket connections below testpath, but
+    # ccache puts the helper socket in /tmp/ccache-tmp-<uid>, and moving it
+    # below testpath via XDG_RUNTIME_DIR exceeds the 104-byte socket path limit.
     ccache_bin = formula_opt_bin("ccache")/"ccache"
     crsh_socket = testpath/"crsh.sock"
     redis_server = formula_opt_bin("redis")/"redis-server"
     redis_cli = formula_opt_bin("redis")/"redis-cli"
     redis_socket = testpath/"redis.sock"
 
-    ENV["CCACHE_DIR"] = (testpath/"ccache").to_s
+    ENV["CCACHE_DIR"] = testpath/"ccache"
     ENV["CCACHE_REMOTE_ONLY"] = "1"
     ENV["CCACHE_REMOTE_STORAGE"] = "crsh:#{crsh_socket}"
 
-    ENV["CRSH_IPC_ENDPOINT"] = crsh_socket.to_s
+    ENV["CRSH_IPC_ENDPOINT"] = crsh_socket
     ENV["CRSH_URL"] = "redis+unix://#{redis_socket}"
 
     (testpath/"test.c").write("int main(void) { return 0; }\n")
@@ -51,7 +49,8 @@ class CcacheStorageRedis < Formula
         sleep 0.1
       end
       assert_predicate redis_socket, :socket?, "Redis did not create its Unix socket"
-      assert_equal "PONG", shell_output("#{redis_cli} -s #{redis_socket} ping").strip
+      assert_equal "PONG", shell_output("#{redis_cli} -s #{redis_socket} ping").strip,
+                   "Redis did not answer PING on its Unix socket"
 
       with_test_process(bin/"ccache-storage-redis") do
         50.times do
@@ -62,13 +61,18 @@ class CcacheStorageRedis < Formula
         assert_predicate crsh_socket, :socket?, "Storage helper did not create its IPC socket"
 
         3.times do
-          system ccache_bin, "cc", "-c", "test.c"
+          system ccache_bin, ENV.cc, "-c", "test.c"
         end
+
         stats = JSON.parse(shell_output("#{ccache_bin} --print-stats --format json"))
-        assert_equal 0, stats["remote_storage_error"]
-        assert_equal 0, stats["remote_storage_timeout"]
-        assert_equal 1, stats["remote_storage_miss"]
-        assert_equal 2, stats["remote_storage_hit"]
+        expected = {
+          "remote_storage_error"   => 0,
+          "remote_storage_timeout" => 0,
+          "remote_storage_miss"    => 1,
+          "remote_storage_hit"     => 2,
+        }
+        assert_equal expected, stats.slice(*expected.keys),
+                     "Expected one remote miss followed by two remote hits via Redis"
       end
     end
   end
