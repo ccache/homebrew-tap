@@ -5,6 +5,12 @@ class CcacheStorageRedis < Formula
   sha256 "56cd23972860ba2caa17efffcff31dc9a327cfd717217ab680cac8e94871c006"
   license "MIT"
 
+  bottle do
+    root_url "https://github.com/ccache/homebrew-tap/releases/download/ccache-storage-redis-0.2.1"
+    sha256 cellar: :any_skip_relocation, arm64_tahoe:  "e681adcf252cab97b6833ffa57a5a7bc938982aa664114c03ee4d18606eb1f30"
+    sha256 cellar: :any,                 x86_64_linux: "e31400ff059a109731c31c398d08e471fed88e4a810a8ac2bcdf2fa7906afc10"
+  end
+
   depends_on "go" => :build
   depends_on "ccache" => :test
   depends_on "redis" => :test
