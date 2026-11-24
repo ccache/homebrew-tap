@@ -1,8 +1,8 @@
 class CcacheStorageOciOs < Formula
   desc "Ccache OCI Object Storage storage helper"
   homepage "https://github.com/ccache/ccache-storage-oci-os"
-  url "https://github.com/ccache/ccache-storage-oci-os/archive/refs/tags/v0.1.1.tar.gz"
-  sha256 "554db44974b489a7401ed615d77b7c860388ae74d4c02d9fdb6db6f8934b552d"
+  url "https://github.com/ccache/ccache-storage-oci-os/archive/refs/tags/v0.1.2.tar.gz"
+  sha256 "bbd6cf12084b635e591e716b00219c6788e8479b3363ab9b54d8e54ea258dd46"
   license "MIT"
 
   bottle do
